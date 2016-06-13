@@ -1,6 +1,6 @@
 {
   "name": "reroute",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Simple SPA Framework",
   "main": "dist/index.js",
   "scripts": {
