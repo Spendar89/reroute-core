@@ -1,6 +1,6 @@
 {
   "name": "reroute-core",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "Simple SPA Framework",
   "main": "lib/index.js",
   "scripts": {
