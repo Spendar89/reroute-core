@@ -2,8 +2,9 @@
   "name": "reroute",
   "version": "0.0.1",
   "description": "Simple SPA Framework",
+  "main": "dist/index.js",
   "scripts": {
-    "build": "babel src --out-dir lib",
+    "build": "babel src --out-dir dist",
     "lint": "eslint src",
     "test": "mocha --compilers js:babel-register --recursive",
     "test:watch": "npm test -- --watch"

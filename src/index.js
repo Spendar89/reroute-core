@@ -5,7 +5,7 @@ import { EventEmitter2 as EventEmitter } from 'eventemitter2';
 let __plugins = {};
 
 function getRouteHandler (event) {
-  const { type='react', key } = event;
+  const { type, key } = event;
   const route = __plugins[type].routes[key];
 
   return Array
