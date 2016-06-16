@@ -4,8 +4,8 @@ import { EventEmitter2 as EventEmitter } from 'eventemitter2';
 
 let __plugins = {};
 
-function getRouteHandler (event) {
-  const { type, key } = event;
+function getRouteHandler (e) {
+  const { type, key } = e;
   const route = __plugins[type].routes[key];
 
   return Array
@@ -31,6 +31,7 @@ function registerPlugins (router, plugins) {
 class Router extends EventEmitter {
   constructor () {
     super();
+
     this.store = {};
   };
 
@@ -45,10 +46,12 @@ class Router extends EventEmitter {
     this.state = fromJS(store);
   };
 
-  route (event) {
-    const route = getRouteHandler(event);
-    const ctx = { ...event };
+  route (e) {
+    const route = getRouteHandler(e);
+    const ctx = { ...e };
     const prevState = this.state;
+
+    this.emit('route', e);
 
     let state = this.state;
 
@@ -78,4 +81,4 @@ class Router extends EventEmitter {
   };
 };
 
-export default new Router({});
+export default new Router();
