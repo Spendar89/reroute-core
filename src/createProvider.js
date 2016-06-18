@@ -1,6 +1,9 @@
 import React from 'react';
+import Router from './Router';
 
-export default function createProvider (router) {
+export default function createProvider (opts) {
+  const router = new Router(opts);
+
   return class Provider extends React.Component {
     static childContextTypes = {
       route: React.PropTypes.func,
