@@ -3,28 +3,30 @@ import React from 'react';
 export default function connect (mapStateToProps, mapRouteToProps) {
   return function (WrappedComponent) {
     return class Connect extends React.Component {
-      constructor (props, context) {
-        super(props, context);
-
-        const { router } = props;
-        const { state, subscribe, route } = router;
-
-        this.router = router;
-        this.subscribe = subscribe.bind(router);
-        this.route = route.bind(router);
-        this.state = this.mapState();
+      static contextTypes = {
+        route: React.PropTypes.func,
+        subscribe: React.PropTypes.func,
+        state: React.PropTypes.object
       };
 
-      mapState () {
-        return mapStateToProps(
-          this.router.state,
-          this.props
+      constructor (props, { state, subscribe, route }) {
+        super();
+        this.subscribe = subscribe;
+        this.route = route;
+        this.state = mapStateToProps(
+          state, 
+          props
         );
       };
 
       componentWillMount () {
         this.unsubscribe = this.subscribe(
-          _ => this.setState(this.mapState)
+          state => this.setState(
+            mapStateToProps(
+              state, 
+              this.props
+            )
+          )
         );
       };
 
@@ -48,11 +50,22 @@ export default function connect (mapStateToProps, mapRouteToProps) {
       };
 
       render () {
-        return React.createElement(WrappedComponent, {
+        const props = {
           ...this.props,
-          ...this.state,
-          ...mapRouteToProps(this.route)
-        });
+          ...this.state
+        };
+
+        const routeToProps = mapRouteToProps(
+          this.route, 
+          props
+        );
+
+        return React.createElement(
+          WrappedComponent, {
+            ...props,
+            ...routeToProps
+          }
+        );
       };
     };
   };
