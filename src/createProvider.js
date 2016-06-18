@@ -1,6 +1,6 @@
 import React from 'react';
 
-export default function provider (router) {
+export default function createProvider (router) {
   return class Provider extends React.Component {
     static childContextTypes = {
       route: React.PropTypes.func,

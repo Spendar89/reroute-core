@@ -1,5 +1,5 @@
 import 'babel-polyfill';
-import { Map } from 'immutable';
+import { Map, fromJS } from 'immutable';
 import { EventEmitter2 } from 'eventemitter2';
 
 let __plugins = {};
@@ -14,10 +14,10 @@ function getRouteHandler (e) {
 };
 
 class Router extends EventEmitter2 {
-  constructor () {
+  constructor ({ store={}, plugins }) {
     super();
-
-    this.state = new Map();
+    this.state = fromJS(store);
+    this.registerPlugins(plugins);
   };
 
   registerPlugins (plugins) {
@@ -38,7 +38,7 @@ class Router extends EventEmitter2 {
   };
 
   registerStore (store) {
-    this.state = this.state.merge(store);
+    this.state = this.state.mergeDeep(store);
 
     return this.state;
   };
@@ -84,4 +84,4 @@ class Router extends EventEmitter2 {
   };
 };
 
-export default new Router();
+export default Router;

@@ -1,7 +1,11 @@
 import React from 'react';
 
 export default function connect (mapStateToProps, mapRouteToProps) {
-  return function (WrappedComponent) {
+  return function (WrappedComponent, opts = {}) {
+    if (opts.displayName) {
+      WrappedComponent.displayName = opts.displayName;
+    };
+
     return class Connect extends React.Component {
       static contextTypes = {
         route: React.PropTypes.func,
