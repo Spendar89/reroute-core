@@ -1,0 +1,25 @@
+{
+  "env": {
+    "es6": true,
+    "node": true,
+    "browser": true 
+  },
+  "parser": "babel-eslint",
+  "rules": {
+    "strict": 1,
+    "quotes": [
+      2,
+      "single"
+    ],
+    "linebreak-style": [
+      2,
+      "unix"
+    ],
+    "no-extra-semi": 0
+  },
+  "ecmaFeatures":
+  {
+    "modules": true
+  },
+  "extends": "eslint:recommended"
+}
