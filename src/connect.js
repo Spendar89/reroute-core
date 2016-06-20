@@ -1,9 +1,13 @@
 import React from 'react';
 
-export default function connect (mapStateToProps, mapRouteToProps) {
+export default (mapStateToProps, mapRouteToProps) => {
   return function (WrappedComponent, opts = {}) {
     if (opts.displayName) {
       WrappedComponent.displayName = opts.displayName;
+    };
+
+    if (typeof mapStateToProps !== 'function') {
+      return WrappedComponent;
     };
 
     return class Connect extends React.Component {
@@ -59,10 +63,9 @@ export default function connect (mapStateToProps, mapRouteToProps) {
           ...this.state
         };
 
-        const routeToProps = mapRouteToProps(
-          this.route, 
-          props
-        );
+        const routeToProps = typeof mapRouteToProps === 'function'
+          ? mapRouteToProps(this.route, props) 
+          : {};
 
         return React.createElement(
           WrappedComponent, {

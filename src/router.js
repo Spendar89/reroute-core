@@ -4,13 +4,35 @@ import { EventEmitter2 } from 'eventemitter2';
 
 let __plugins = {};
 
-function getRouteHandler (e) {
-  const { type, key } = e;
-  const route = __plugins[type].routes[key];
+function matchKeys (routeKey, eventKey) {
+  const src = "\\b" + routeKey + "\\b";
 
-  return Array
-    .prototype
-    .concat(route);
+  return new RegExp(src).test(eventKey);
+};
+
+function getRouteHandler ({ type, key }) {
+  const { routes } = __plugins[type];
+  const eventKeyArray = key.split('/');
+
+  if (eventKeyArray[1] && !eventKeyArray[1].length) {
+    return [].concat(routes[key]);
+  };
+
+  return Object.keys(routes).reduce((curr, routeKey) => {
+    const routeKeyArray = routeKey.split('/');
+
+    for(let i in routeKeyArray) {
+      const isKeyMatch = matchKeys(routeKeyArray[i], eventKeyArray[i]);
+      const isParamMatch = routeKeyArray[i][0] == ':' && eventKeyArray[i];
+      const isKeyMissing = !eventKeyArray[i] && !routeKeyArray[i];
+
+      const isMatch = !isKeyMatch && !isParamMatch && !isKeyMissing;
+
+      if (isMatch) return curr;
+    };
+
+    return curr.concat(routes[routeKey]);
+  }, []);
 };
 
 class Router extends EventEmitter2 {
@@ -44,40 +66,39 @@ class Router extends EventEmitter2 {
   };
 
   subscribe (cb) {
-   this.on('commit', cb); 
+    this.on('commit', cb); 
 
-   return _ => this.off('commit', cb);
+    return _ => this.off('commit', cb);
   };
 
   route (e) {
+    this.emit('route', e);
+
     const route = getRouteHandler(e);
     const ctx = { ...e };
     const prevState = this.state;
 
-    this.emit('route', e);
-
     let state = this.state;
 
     async function handle (e, i=0) {
-      let output = route[i](
-        state.toJS(),
-        ctx
-      );
+      let output = typeof route[i] === 'function'
+        ? route[i](state.toJS(), ctx)
+        : {};
 
       // resolve ouput if it returns a promise
-      output = output && output.then
-        ? await output
-        : output;
+        output = output && output.then
+          ? await output
+          : output;
 
-      state = state.merge(output);
+        state = state.merge(output);
 
-      if (i + 1 < route.length) {
-        requestAnimationFrame(handle.bind(this, e, i+1));
-      } else {
-        this.state = state;
+        if (i + 1 < route.length) {
+          requestAnimationFrame(handle.bind(this, e, i+1));
+        } else {
+          this.state = state;
 
-        this.emit('commit', this.state, prevState);
-      };
+          this.emit('commit', this.state, prevState);
+        };
     };
 
     requestAnimationFrame(handle.bind(this));
