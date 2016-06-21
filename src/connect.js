@@ -14,10 +14,11 @@ export default (mapStateToProps, mapRouteToProps) => {
       static contextTypes = {
         route: React.PropTypes.func,
         subscribe: React.PropTypes.func,
-        state: React.PropTypes.object
+        state: React.PropTypes.object,
+        goToUrl: React.PropTypes.func
       };
 
-      constructor (props, { state, subscribe, route }) {
+      constructor (props, { state, subscribe, route, goToUrl }) {
         super();
         this.subscribe = subscribe;
         this.route = route;
@@ -59,6 +60,7 @@ export default (mapStateToProps, mapRouteToProps) => {
 
       render () {
         const props = {
+          ...this.context,
           ...this.props,
           ...this.state
         };

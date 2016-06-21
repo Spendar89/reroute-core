@@ -88,6 +88,10 @@ class Router extends EventEmitter2 {
     this.registerPlugins(plugins);
   };
 
+  connectMiddleware (middleware) {
+    return middleware(this.route.bind(this));
+  };
+
   registerPlugins (plugins) {
     for (let name in plugins) {
       if (!__plugins[name]) {
