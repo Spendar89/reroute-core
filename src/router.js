@@ -4,19 +4,24 @@ import { EventEmitter2 } from 'eventemitter2';
 
 let __plugins = {};
 
+function _parse (str) {
+  const numVal = parseInt(str);
+
+  return numVal >= 0 || numVal < 0 ? numVal : str;
+};
+
 function matchKeys (routeKey, eventKey) {
   const src = "\\b" + routeKey + "\\b";
 
   return new RegExp(src).test(eventKey);
 };
 
-function getRouteHandler ({ type, key }) {
-  const { routes } = __plugins[type];
-  const eventKeyArray = key.split('/');
+function getMatchingRouteKeys (eventKey, routes) {
+  const eventKeyArray = eventKey.split('/');
+  const isBasePath = eventKeyArray[1] 
+    && !eventKeyArray[1].length;
 
-  if (eventKeyArray[1] && !eventKeyArray[1].length) {
-    return [].concat(routes[key]);
-  };
+  if (isBasePath) return eventKey;
 
   return Object.keys(routes).reduce((curr, routeKey) => {
     const routeKeyArray = routeKey.split('/');
@@ -26,13 +31,51 @@ function getRouteHandler ({ type, key }) {
       const isParamMatch = routeKeyArray[i][0] == ':' && eventKeyArray[i];
       const isKeyMissing = !eventKeyArray[i] && !routeKeyArray[i];
 
-      const isMatch = !isKeyMatch && !isParamMatch && !isKeyMissing;
+      const isNotMatch = !isKeyMatch && !isParamMatch && !isKeyMissing;
 
-      if (isMatch) return curr;
+      if (isNotMatch) return curr;
     };
 
-    return curr.concat(routes[routeKey]);
+    return [ ...curr, routeKey ];
   }, []);
+};
+
+function mapRouteKeysToHandler (routeKeys, routes) {
+  return routeKeys.reduce((curr, k) => curr.concat(routes[k]), []);
+};
+
+function routesByType (type) {
+  return __plugins[type].routes;
+};
+
+function routeKeyToParamsArray (routeKey) {
+  return routeKey
+    .split('/')
+    .map(k => k[0] === ':' ? k.substr(1) : false);
+};
+
+function getParams (eventKey, routeKeys) {
+  const eventKeyArray = eventKey.split('/');
+
+  return routeKeys
+    .reduce((curr, routeKey) => { 
+      const params = routeKeyToParamsArray(routeKey)
+        .reduce((curr, param, i) => {
+          if (!param) return curr;
+
+          const val = _parse(eventKeyArray[i]);
+
+          return { 
+            ...curr, 
+            [param]: val 
+          };
+        }, {});
+
+      return {
+        ...curr,
+        ...params
+      };
+    }, {});
 };
 
 class Router extends EventEmitter2 {
@@ -74,15 +117,28 @@ class Router extends EventEmitter2 {
   route (e) {
     this.emit('route', e);
 
-    const route = getRouteHandler(e);
-    const ctx = { ...e };
-    const prevState = this.state;
+    const routes = routesByType(e.type);
+    const routeKeys = getMatchingRouteKeys(e.key, routes);
+    const handler = mapRouteKeysToHandler(routeKeys, routes);
+    const params = getParams(e.key, routeKeys);
+
+    const ctx = { 
+      ...e, 
+      routeKeys, 
+      params 
+    };
+
+    // TODO: add proper logging (as middleware) 
+    console.info(
+      `matching routes for ${e.key}:`, 
+      routeKeys
+    );
 
     let state = this.state;
 
     async function handle (e, i=0) {
-      let output = typeof route[i] === 'function'
-        ? route[i](state.toJS(), ctx)
+      let output = typeof handler[i] === 'function'
+        ? handler[i](state.toJS(), ctx)
         : {};
 
       // resolve ouput if it returns a promise
@@ -92,12 +148,12 @@ class Router extends EventEmitter2 {
 
         state = state.merge(output);
 
-        if (i + 1 < route.length) {
+        if (i + 1 < handler.length) {
           requestAnimationFrame(handle.bind(this, e, i+1));
         } else {
           this.state = state;
 
-          this.emit('commit', this.state, prevState);
+          this.emit('commit', this.state);
         };
     };
 
