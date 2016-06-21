@@ -4,10 +4,11 @@
   "description": "Simple SPA Framework",
   "main": "lib/index.js",
   "scripts": {
-    "build": "babel src --out-dir lib",
-    "lint": "eslint src",
+    "build": "npm install && babel src --out-dir lib",
+    "build:watch": "npm run build -- --watch",
     "test": "mocha --compilers js:babel-register --recursive",
-    "test:watch": "npm test -- --watch"
+    "test:watch": "npm test -- --watch",
+    "lint": "eslint src"
   },
   "repository": {
     "type": "git",

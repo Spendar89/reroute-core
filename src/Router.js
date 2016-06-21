@@ -80,7 +80,10 @@ function getParams (eventKey, routeKeys) {
 
 class Router extends EventEmitter2 {
   constructor ({ store={}, plugins }) {
+    __plugins = {};
+
     super();
+
     this.state = fromJS(store);
     this.registerPlugins(plugins);
   };
