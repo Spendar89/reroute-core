@@ -16,14 +16,14 @@ function matchKeys (routeKey, eventKey) {
   return new RegExp(src).test(eventKey);
 };
 
-function getMatchingRouteKeys (eventKey, routes) {
+function getMatchingRoutes (eventKey, controller) {
   const eventKeyArray = eventKey.split('/');
   const isBasePath = eventKeyArray[1] 
     && !eventKeyArray[1].length;
 
   if (isBasePath) return eventKey;
 
-  return Object.keys(routes).reduce((curr, routeKey) => {
+  return Object.keys(controller).reduce((curr, routeKey) => {
     const routeKeyArray = routeKey.split('/');
 
     for(let i in routeKeyArray) {
@@ -40,12 +40,12 @@ function getMatchingRouteKeys (eventKey, routes) {
   }, []);
 };
 
-function mapRouteKeysToHandler (routeKeys, routes) {
-  return routeKeys.reduce((curr, k) => curr.concat(routes[k]), []);
+function routesToHandler (routes, controller) {
+  return routes.reduce((curr, k) => curr.concat(controller[k]), []);
 };
 
-function routesByType (type) {
-  return __plugins[type].routes;
+function getController (type) {
+  return __plugins[type].controller;
 };
 
 function routeKeyToParamsArray (routeKey) {
@@ -54,10 +54,10 @@ function routeKeyToParamsArray (routeKey) {
     .map(k => k[0] === ':' ? k.substr(1) : false);
 };
 
-function getParams (eventKey, routeKeys) {
+function getParams (eventKey, routes) {
   const eventKeyArray = eventKey.split('/');
 
-  return routeKeys
+  return routes
     .reduce((curr, routeKey) => { 
       const params = routeKeyToParamsArray(routeKey)
         .reduce((curr, param, i) => {
@@ -124,21 +124,21 @@ class Router extends EventEmitter2 {
   route (e) {
     this.emit('route', e);
 
-    const routes = routesByType(e.type);
-    const routeKeys = getMatchingRouteKeys(e.key, routes);
-    const handler = mapRouteKeysToHandler(routeKeys, routes);
-    const params = getParams(e.key, routeKeys);
+    const controller = getController(e.type);
+    const routes = getMatchingRoutes(e.key, controller);
+    const handler = routesToHandler(routes, controller);
+    const params = getParams(e.key, routes);
 
     const ctx = { 
       ...e, 
-      routeKeys, 
+      routes, 
       params 
     };
 
     // TODO: add proper logging (as middleware) 
     console.info(
       `matching routes for ${e.key}:`, 
-      routeKeys
+      routes
     );
 
     let state = this.state;

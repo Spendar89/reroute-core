@@ -1,3 +1,3 @@
 export register from './register';
-export routes from './routes';
+export controller from './controller';
 export middleware from './middleware';

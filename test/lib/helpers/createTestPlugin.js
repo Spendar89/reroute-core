@@ -1,13 +1,13 @@
 import expect from 'expect';
 
-export default function createTestPlugin (key, routes={}, register=expect.createSpy()) {
+export default function createTestPlugin (key, controller={}, register=expect.createSpy()) {
   return {
     [key]: {
-      routes: {
+      controller: {
 
         a: [ expect.createSpy() ],
         b: expect.createSpy(),
-          ...routes
+          ...controller
       },
       register
     }

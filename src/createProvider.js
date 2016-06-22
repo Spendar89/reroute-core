@@ -1,24 +1,21 @@
 import React from 'react';
 import Router from './Router';
 
-export default function createProvider (opts) {
-  const router = new Router(opts);
-  const { url } = router.registerPlugins();
+export default function createProvider ({ plugins, store }) {
+  const router = new Router(plugins, store);
 
   return class Provider extends React.Component {
     static childContextTypes = {
       route: React.PropTypes.func,
       subscribe: React.PropTypes.func,
-      state: React.PropTypes.object,
-      goToUrl: React.PropTypes.func
+      state: React.PropTypes.object
     };
 
     getChildContext () {
       return {
         state: router.state,
         route: router.route.bind(router),
-        subscribe: router.subscribe.bind(router),
-        goToUrl: router.connectMiddleware(url.middleware)      };
+        subscribe: router.subscribe.bind(router)
     };
 
     render () {

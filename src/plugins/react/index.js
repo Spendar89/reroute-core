@@ -1,1 +1,1 @@
-export { default as routes } from './routes';
+export controller from './controller';

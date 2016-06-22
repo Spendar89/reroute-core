@@ -1,11 +1,11 @@
-import routes from './routes';
+import controller from './controller';
 
 export default function register (router) {
   const valToJS = val => val && val.toJS
     ? val.toJS()
     : val;
 
-  for (let key in routes) {
+  for (let key in controller) {
     // multiple paths are separated by commas
     const pathStrings = key.split(',');
 

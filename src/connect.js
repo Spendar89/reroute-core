@@ -14,11 +14,10 @@ export default (mapStateToProps, mapRouteToProps) => {
       static contextTypes = {
         route: React.PropTypes.func,
         subscribe: React.PropTypes.func,
-        state: React.PropTypes.object,
-        goToUrl: React.PropTypes.func
+        state: React.PropTypes.object
       };
 
-      constructor (props, { state, subscribe, route, goToUrl }) {
+      constructor (props, { state, subscribe, route }) {
         super();
         this.subscribe = subscribe;
         this.route = route;

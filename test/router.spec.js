@@ -63,11 +63,11 @@ describe('Router', () => {
   describe('route', (done) => {
     global.requestAnimationFrame = setTimeout;
 
-    const { routes } = router.registerPlugins().a;
+    const { controller } = router.registerPlugins().a;
 
     it('should support array handlers', (done) => {
       const unsubscribe = router.subscribe(() => {
-        for (let route of routes.a) {
+        for (let route of controller.a) {
           expect(route.calls.length).toEqual(1);
         };
 
@@ -81,7 +81,7 @@ describe('Router', () => {
 
     it('should support function handlers', (done) => {
       const unsubscribe = router.subscribe(_ => {
-        expect(routes.b.calls.length).toEqual(1);
+        expect(controller.b.calls.length).toEqual(1);
 
         unsubscribe();
 
